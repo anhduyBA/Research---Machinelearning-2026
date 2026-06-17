@@ -1,0 +1,307 @@
+C:\Users\Anh Duy\AppData\Local\Programs\Python\Python312\Lib\site-packages\huggingface_hub\file_download.py:138: UserWarning: `huggingface_hub` cache-system uses symlinks by default to efficiently store duplicated files but your machine does not support them in C:\Users\Anh Duy\.cache\huggingface\hub\models--vinai--phobert-base. Caching files will still work but in a degraded version that might require more space on your disk. This warning can be disabled by setting the `HF_HUB_DISABLE_SYMLINKS_WARNING` environment variable. For more details, see https://huggingface.co/docs/huggingface_hub/how-to-cache#limitations.
+To support symlinks on Windows, you either need to activate Developer Mode or to run Python as an administrator. In order to activate developer mode, see this article: https://docs.microsoft.com/en-us/windows/apps/get-started/enable-your-device-for-development
+  warnings.warn(message)
+Warning: You are sending unauthenticated requests to the HF Hub. Please set a HF_TOKEN to enable higher rate limits and faster downloads.
+
+==================================================
+TASK 1: FEATURE ENGINEERING
+==================================================
+Loading dataset from: labeled_shopee_dataset.csv
+Exported engineered features dataset to: p4_outputs/p4_feature_dataset.csv
+
+Dataset Shape: (500, 17)
+
+Missing values in each column:
+user_id              0
+comment_clean        0
+timestamp            0
+is_suspicious        0
+word_count           0
+char_length          0
+avg_word_len         0
+exclamation_ratio    0
+newline_count        0
+user_review_count    0
+user_burst_1h        0
+image_count          0
+account_age_days     0
+h1_content           0
+h2_duplicate         0
+h3_burst             0
+h4_semantic          0
+dtype: int64
+
+Descriptive statistics:
+                   count  ...         std
+timestamp            500  ...         NaN
+is_suspicious      500.0  ...    0.255403
+word_count         500.0  ...   20.416139
+char_length        500.0  ...   92.915745
+avg_word_len       500.0  ...     0.39536
+exclamation_ratio  500.0  ...    0.004086
+newline_count      500.0  ...    1.921901
+user_review_count  500.0  ...    1.284069
+user_burst_1h      500.0  ...    0.254939
+image_count        500.0  ...    1.120235
+account_age_days   500.0  ...  185.914676
+h1_content         500.0  ...    0.063182
+h2_duplicate       500.0  ...    0.209695
+h3_burst           500.0  ...         0.0
+h4_semantic        500.0  ...     0.14014
+
+[15 rows x 8 columns]
+
+Correlation with is_suspicious (sorted descending):
+is_suspicious        1.000000
+h2_duplicate         0.800382
+h4_semantic          0.520708
+user_burst_1h        0.432120
+h1_content           0.230990
+user_review_count    0.081149
+char_length          0.070301
+word_count           0.069775
+newline_count       -0.007226
+account_age_days    -0.010019
+exclamation_ratio   -0.013831
+image_count         -0.045388
+avg_word_len        -0.162795
+h3_burst                  NaN
+Name: is_suspicious, dtype: float64
+
+==================================================
+TASK 2: ISOLATION FOREST
+==================================================
+
+--- Isolation Forest (Whole Dataset, threshold=0.50) Evaluation ---
+Precision : 0.4528
+Recall    : 0.6857
+F1 Score  : 0.5455
+AUC-ROC   : 0.9662
+PR-AUC    : 0.6535
+Confusion Matrix:
+[[436  29]
+ [ 11  24]]
+
+--- Isolation Forest (Whole Dataset, threshold=0.65) Evaluation ---
+Precision : 0.7200
+Recall    : 0.5143
+F1 Score  : 0.6000
+AUC-ROC   : 0.9662
+PR-AUC    : 0.6535
+Confusion Matrix:
+[[458   7]
+ [ 17  18]]
+Saved IF scores to: p4_outputs/p4_if_scores.csv
+
+5-Fold Stratified CV Results (threshold=0.50):
+F1 Score  : 0.5323 ± 0.2721
+AUC-ROC   : 0.9791 ± 0.0166
+
+5-Fold Stratified CV Results (threshold=0.65):
+F1 Score  : 0.5483 ± 0.2919
+
+Running Feature Ablation Study...
+Saved feature ablation study results to: p4_outputs/p4_ablation_results.csv
+        Configuration  Precision   Recall       F1  AUC-ROC   PR-AUC
+           Full Model   0.452830 0.685714 0.545455 0.966206 0.653546
+w/o Text features (A)   0.463768 0.914286 0.615385 0.966636 0.636095
+   w/o Behavioral (B)   0.660377 1.000000 0.795455 0.983902 0.694982
+ w/o Weak signals (C)   0.291667 0.400000 0.337349 0.682120 0.249116
+        Text only (A)   0.148148 0.114286 0.129032 0.501567 0.116202
+Weak signals only (C)   1.000000 1.000000 1.000000 1.000000 1.000000
+
+==================================================
+TASK 3: AUTOENCODER
+==================================================
+Attempting to import and load PhoBERT (vinai/phobert-base)...
+Loading weights:   0%|          | 0/199 [00:00<?, ?it/s]Loading weights: 100%|##########| 199/199 [00:00<00:00, 7542.76it/s]
+[transformers] [1mRobertaModel LOAD REPORT[0m from: vinai/phobert-base
+Key                       | Status     |  | 
+--------------------------+------------+--+-
+lm_head.decoder.weight    | UNEXPECTED |  | 
+lm_head.dense.weight      | UNEXPECTED |  | 
+lm_head.bias              | UNEXPECTED |  | 
+lm_head.dense.bias        | UNEXPECTED |  | 
+lm_head.decoder.bias      | UNEXPECTED |  | 
+lm_head.layer_norm.weight | UNEXPECTED |  | 
+lm_head.layer_norm.bias   | UNEXPECTED |  | 
+
+Notes:
+- UNEXPECTED:	can be ignored when loading from different task/architecture; not ok if you expect identical arch.
+PhoBERT successfully imported and loaded.
+Extracting PhoBERT embeddings on device: cpu...
+Saved PhoBERT embeddings to 'p4_outputs/p4_phobert_embeddings.npy'. Shape: (500, 768)
+Epoch 01: Train Loss = 0.373071, Val Loss = 0.141242
+Epoch 10: Train Loss = 0.042422, Val Loss = 0.048298
+Epoch 20: Train Loss = 0.036570, Val Loss = 0.045557
+Epoch 30: Train Loss = 0.034023, Val Loss = 0.044357
+Epoch 40: Train Loss = 0.030732, Val Loss = 0.042514
+Epoch 50: Train Loss = 0.029580, Val Loss = 0.041944
+Saved AE training history to: p4_outputs/p4_ae_loss_history.csv
+AE Train Error Mean: 0.025868, Std: 0.008547
+AE Anomaly Detection Threshold (mean + 2*std): 0.042963
+
+--- Autoencoder (Whole Dataset) Evaluation ---
+Precision : 0.0769
+Recall    : 0.0857
+F1 Score  : 0.0811
+AUC-ROC   : 0.4091
+PR-AUC    : 0.1176
+Confusion Matrix:
+[[429  36]
+ [ 32   3]]
+Saved AE scores to: p4_outputs/p4_ae_scores.csv
+
+==================================================
+TASK 4: SCORE FUSION + FINAL PREDICTIONS
+==================================================
+
+--- Fusion Model (IF + AE, threshold=0.50) Evaluation ---
+Precision : 0.3750
+Recall    : 0.0857
+F1 Score  : 0.1395
+AUC-ROC   : 0.8961
+PR-AUC    : 0.4145
+Confusion Matrix:
+[[460   5]
+ [ 32   3]]
+
+--- Fusion Model (IF + AE, threshold=0.65) Evaluation ---
+Precision : 1.0000
+Recall    : 0.0571
+F1 Score  : 0.1081
+AUC-ROC   : 0.8961
+PR-AUC    : 0.4145
+Confusion Matrix:
+[[465   0]
+ [ 33   2]]
+
+--- Fusion Model (IF + AE, threshold=0.35 [optimal]) Evaluation ---
+Precision : 0.3284
+Recall    : 0.6286
+F1 Score  : 0.4314
+AUC-ROC   : 0.8961
+PR-AUC    : 0.4145
+Confusion Matrix:
+[[420  45]
+ [ 13  22]]
+Saved final predictions to: p4_outputs/p4_final_predictions.csv
+
+==================================================
+TASK 5: MODEL COMPARISON & BENCHMARK
+==================================================
+Saved benchmark comparison results to: p4_outputs/p4_benchmark_results.csv
+
+==================================================
+BENCHMARK COMPARISON TABLE
+==================================================
+                                 Model  Precision   Recall       F1  AUC-ROC   PR-AUC
+     Model A (Isolation Forest @ 0.50)   0.452830 0.685714 0.545455 0.966206 0.653546
+     Model A (Isolation Forest @ 0.65)   0.720000 0.514286 0.600000 0.966206 0.653546
+         Model B (AE text-only @ 0.50)   0.076923 0.085714 0.081081 0.409094 0.117625
+          Model B (AE + Fusion @ 0.50)   0.375000 0.085714 0.139535 0.896098 0.414476
+          Model B (AE + Fusion @ 0.65)   1.000000 0.057143 0.108108 0.896098 0.414476
+Model B (AE + Fusion @ 0.35) [optimal]   0.328358 0.628571 0.431373 0.896098 0.414476
+
+Written phase 4 summary report to: p4_outputs/p4_summary_report.txt
+Phase 4 Pipeline completed successfully!
+Warning: You are sending unauthenticated requests to the HF Hub. Please set a HF_TOKEN to enable higher rate limits and faster downloads.
+============================================================
+STEP 1: LOAD SHOPEE DATASET
+============================================================
+Total reviews    : 500
+Normal   (y=0)   : 465
+Anomalous(y=1)   : 35  (7.00%)
+
+============================================================
+STEP 2: TEXT ENCODING (MPNet transformer)
+============================================================
+Loading MPNet checkpoint: paraphrase-multilingual-mpnet-base-v2 ...
+Loading weights:   0%|          | 0/199 [00:00<?, ?it/s]Loading weights: 100%|##########| 199/199 [00:00<00:00, 2481.15it/s]
+Batches:   0%|          | 0/16 [00:00<?, ?it/s]Batches:   6%|6         | 1/16 [00:04<01:02,  4.14s/it]Batches:  12%|#2        | 2/16 [00:06<00:45,  3.22s/it]Batches:  19%|#8        | 3/16 [00:08<00:34,  2.68s/it]Batches:  25%|##5       | 4/16 [00:10<00:29,  2.44s/it]Batches:  31%|###1      | 5/16 [00:12<00:24,  2.25s/it]Batches:  38%|###7      | 6/16 [00:14<00:22,  2.22s/it]Batches:  44%|####3     | 7/16 [00:16<00:18,  2.06s/it]Batches:  50%|#####     | 8/16 [00:18<00:15,  1.90s/it]Batches:  56%|#####6    | 9/16 [00:19<00:12,  1.76s/it]Batches:  62%|######2   | 10/16 [00:20<00:09,  1.62s/it]Batches:  69%|######8   | 11/16 [00:22<00:07,  1.53s/it]Batches:  75%|#######5  | 12/16 [00:23<00:06,  1.53s/it]Batches:  81%|########1 | 13/16 [00:25<00:04,  1.56s/it]Batches:  88%|########7 | 14/16 [00:26<00:02,  1.48s/it]Batches:  94%|#########3| 15/16 [00:27<00:01,  1.41s/it]Batches: 100%|##########| 16/16 [00:28<00:00,  1.22s/it]Batches: 100%|##########| 16/16 [00:28<00:00,  1.80s/it]
+MPNet embeddings shape: (500, 768)
+Encoder used: MPNet (paraphrase-multilingual-mpnet-base-v2)
+
+============================================================
+STEP 3: ONE-CLASS TRAIN/TEST SPLIT
+============================================================
+Train (normal only): 372
+Test set           : 128  (normal=93, anomalous=35)
+
+============================================================
+STEP 4: ANOMALY DETECTION MODELS
+============================================================
+
+>> Model 1: Autoencoder (DAEF-style reconstruction)
+   epoch 001  val_loss=0.983268
+   epoch 020  val_loss=0.449394
+   epoch 040  val_loss=0.402073
+   epoch 060  val_loss=0.383477
+   epoch 080  val_loss=0.374857
+   epoch 100  val_loss=0.368241
+   IQR threshold (Q3+1.5*IQR) = 0.178405
+
+--- Autoencoder (DAEF-style) @ IQR threshold ---
+Precision : 0.2569
+Recall    : 0.8000
+F1        : 0.3889
+AUC-ROC   : 0.4215
+PR-AUC    : 0.3053
+Confusion matrix [[TN FP],[FN TP]]:
+[[12 81]
+ [ 7 28]]
+   Percentile-threshold sweep on AE (train-error percentiles):
+      Q50: thr=0.10029  F1=0.4348
+      Q60: thr=0.10895  F1=0.4403
+      Q70: thr=0.11840  F1=0.4258
+      Q80: thr=0.13133  F1=0.4286
+      Q90: thr=0.26900  F1=0.2574
+      Q95: thr=0.39236  F1=0.1791
+
+>> Model 2: One-Class SVM
+
+--- One-Class SVM ---
+Precision : 0.2414
+Recall    : 0.2000
+F1        : 0.2188
+AUC-ROC   : 0.5167
+PR-AUC    : 0.3445
+Confusion matrix [[TN FP],[FN TP]]:
+[[71 22]
+ [28  7]]
+
+>> Model 3: Isolation Forest
+
+--- Isolation Forest ---
+Precision : 0.4118
+Recall    : 0.2000
+F1        : 0.2692
+AUC-ROC   : 0.5650
+PR-AUC    : 0.3803
+Confusion matrix [[TN FP],[FN TP]]:
+[[83 10]
+ [28  7]]
+
+>> Model 4: Local Outlier Factor
+
+--- Local Outlier Factor ---
+Precision : 0.3846
+Recall    : 0.1429
+F1        : 0.2083
+AUC-ROC   : 0.4934
+PR-AUC    : 0.3318
+Confusion matrix [[TN FP],[FN TP]]:
+[[85  8]
+ [30  5]]
+
+============================================================
+STEP 5: BENCHMARK COMPARISON (anomalous = positive class)
+============================================================
+                         Model  Precision   Recall       F1  AUC-ROC   PR-AUC
+Autoencoder (DAEF-style) @ IQR   0.256881 0.800000 0.388889 0.421505 0.305281
+                 One-Class SVM   0.241379 0.200000 0.218750 0.516743 0.344468
+              Isolation Forest   0.411765 0.200000 0.269231 0.564977 0.380332
+          Local Outlier Factor   0.384615 0.142857 0.208333 0.493395 0.331817
+
+All outputs saved to: p4_outputs_paper/
+Done.

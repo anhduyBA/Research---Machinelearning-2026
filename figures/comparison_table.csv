@@ -1,0 +1,6 @@
+﻿Mô hình,Tập dữ liệu,Đặc trưng,Precision,Recall,F1,AUC-ROC
+Của tôi (best),Shopee,Hành vi + văn bản + tín hiệu yếu,0.72,0.5142857142857142,0.6,0.9662058371735792
+Paper (best),Shopee,Chỉ văn bản MPNet,0.2568807339449541,0.8,0.3888888888888889,0.4215053763440859
+"Của tôi (10-fold, sạch)",Shopee,Hành vi (bỏ h1-h4),,,0.5971,0.7514
+Paper (10-fold),Shopee,Văn bản MPNet,,,0.519,0.5524
+Của tôi (unsupervised),Amazon,TF-IDF (không nhãn),,,,
