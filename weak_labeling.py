@@ -101,9 +101,16 @@ def apply_weak_labeling(input_csv, output_csv):
     
     # Round timestamp to nearest hour to bin them
     df_labeled['hour_bin'] = df_labeled['timestamp'].dt.floor('h')
-    
-    # Calculate group count in each hour bin
-    burst_counts = df_labeled.groupby('hour_bin')['user_id'].transform('count')
+
+    # Burst = > 10 reviews for ONE product within one hour.
+    # For a multi-product corpus we must bin per product, otherwise reviews of
+    # different products in the same hour get cross-counted. Fall back to global
+    # hour bins when the raw file has no product_id (single-product case).
+    if 'product_id' in df_labeled.columns:
+        group_keys = ['product_id', 'hour_bin']
+    else:
+        group_keys = ['hour_bin']
+    burst_counts = df_labeled.groupby(group_keys)['user_id'].transform('count')
     df_labeled['h3_burst'] = (burst_counts > 10).astype(int)
     
     # Drop temporary bin column
